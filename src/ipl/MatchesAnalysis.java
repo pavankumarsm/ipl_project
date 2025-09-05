@@ -149,17 +149,12 @@ public class MatchesAnalysis {
                 Map<String, Integer> bowlerMap = wicketTaker.get(season);
 //
                 bowlerMap.put(bowler,bowlerMap.getOrDefault(bowler,0)+1);
-
             }
-
         }
-
         Map<Integer,String> topWicket = new TreeMap<>();
         for(Map.Entry<Integer,Map<String,Integer>>  seasonEntry : wicketTaker.entrySet()){
             int season = seasonEntry.getKey();
             Map<String,Integer> bowlerWicket = seasonEntry.getValue();
-//            System.out.println(season+" "+ value);
-
         String topBowler = null;
         int maxWickets = 0;
 
@@ -204,4 +199,40 @@ public class MatchesAnalysis {
         return matchKey;
     }
 
+    public static Map<String, Integer> sameBowlerDismissedbySamePlayer(List<Deliveries> deliveries) {
+
+        Map<String,Map<String,Integer>> bowlerName = new HashMap<>();
+        for(Deliveries d:deliveries){
+            String bowler = d.getBowler();
+            String batsmanOut = d.getPlayerDismissed();
+            String dismissedType = d.getDismissalKind();
+
+            if(batsmanOut!= null && !batsmanOut.trim().isEmpty()
+                    && dismissedType!=null
+                    && !dismissedType.equalsIgnoreCase("run out")
+                    && !dismissedType.equalsIgnoreCase("retired hurt")) {
+                bowlerName.putIfAbsent(bowler, new HashMap<>());
+                Map<String, Integer> batsmanMap = bowlerName.get(bowler);
+
+                batsmanMap.put(batsmanOut, batsmanMap.getOrDefault(batsmanOut, 0) + 1);
+            }
+        }
+            String topPair = null;
+            int max=0;
+
+            for(Map.Entry<String,Map<String,Integer>> bowlerEntry :bowlerName.entrySet() ){
+                String bowlerWik =bowlerEntry.getKey();
+                for(Map.Entry<String,Integer> batsmanEntry : bowlerEntry.getValue().entrySet()){
+                    if(batsmanEntry.getValue()>max){
+                        max=batsmanEntry.getValue();
+                        topPair= bowlerWik+" Dismissed "+ batsmanEntry.getKey();
+
+                    }
+                }
+        }
+        Map<String, Integer> result = new HashMap<>();
+        result.put(topPair, max);
+        return result;
+
+    }
 }

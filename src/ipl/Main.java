@@ -84,8 +84,11 @@ public class Main {
         }
         System.out.println();
 
+        System.out.println("---------------- Highest Number of times one player dismissed by another player  ----------------");
+        Map<String, Integer> dismissedPlayer = MatchesAnalysis.sameBowlerDismissedbySamePlayer(deliveries);
 
-
+        System.out.println(dismissedPlayer);
+        System.out.println();
 
 
 
