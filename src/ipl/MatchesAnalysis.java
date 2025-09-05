@@ -189,17 +189,19 @@ public class MatchesAnalysis {
         return matchesPlayedCity;
     }
 
-//    public static Map<String, Integer> numberOfMatchesPlayedHomeTeam(List<Matches> matches) {
-//
-//        Map<String,Integer> matchPlayedHomeTeam = new HashMap<>();
-//        for(Matches m:matches){
-//            String city = m.getCity();
-//            if(city.equals(m.getTeam1()) || city.equals(m.getTeam2())){
-//                matchPlayedHomeTeam.put(city, matchPlayedHomeTeam.getOrDefault(city,0)+1);
-//            }
-//        }
-//
-//
-//        return matchPlayedHomeTeam;
-//    }
+
+    public static Map<String, Integer> wonTossAndWonMatch(List<Matches> matches) {
+
+        Map<String,Integer> matchKey = new TreeMap<>();
+        for(Matches m:matches){
+            String matchWin = m.getWinner();
+            String tossWin = m.getTossWinner();
+            if(tossWin != null && tossWin.equalsIgnoreCase(matchWin)){
+                matchKey.put(matchWin,matchKey.getOrDefault(matchWin,0)+1);
+            }
+        }
+
+        return matchKey;
+    }
+
 }

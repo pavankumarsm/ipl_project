@@ -76,8 +76,13 @@ public class Main {
         System.out.println();
 
 
-//        Map<String, Integer> homeTeam = MatchesAnalysis.numberOfMatchesPlayedHomeTeam(matches);
-//        System.out.println(homeTeam);
+        Map<String, Integer> tossWonAndWinMatch = MatchesAnalysis.wonTossAndWonMatch(matches);
+        System.out.println("---------------- Number of Times both Toss and Match Win  ----------------");
+        System.out.printf("%-10s | %-30s%n", "Times", "Team");
+        for (Map.Entry<String,Integer> entry:tossWonAndWinMatch.entrySet()) {
+            System.out.printf("%-10d | %-30s%n", entry.getValue(), entry.getKey());
+        }
+        System.out.println();
 
 
 
