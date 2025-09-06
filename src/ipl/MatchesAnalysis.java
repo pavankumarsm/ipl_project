@@ -68,7 +68,6 @@ public class MatchesAnalysis {
                 if(wides==0 && noBall==0){
                     legalDeliveries.put(bowler, legalDeliveries.getOrDefault(bowler,0)+1);
                 }
-
             }
         }
         // finding economy of the bowler
@@ -93,7 +92,6 @@ public class MatchesAnalysis {
 
         return top10;
     }
-
 
     //Win percentage Team Per Season
 
@@ -143,7 +141,6 @@ public class MatchesAnalysis {
                 int season  = MatchByYear.get(d.getMatchId());
 //                System.out.print(bowler);
                 String bowler = d.getBowler();
-
                 // if season not present, create new map
                 wicketTaker.putIfAbsent(season, new HashMap<>());
                 Map<String, Integer> bowlerMap = wicketTaker.get(season);
@@ -171,7 +168,6 @@ public class MatchesAnalysis {
 
     }
 
-
     public static Map<String, Integer> numberOfMatchesPlayedEachCity(List<Matches> matches) {
 
         Map<String, Integer> matchesPlayedCity = new TreeMap<>();
@@ -183,7 +179,6 @@ public class MatchesAnalysis {
         }
         return matchesPlayedCity;
     }
-
 
     public static Map<String, Integer> wonTossAndWonMatch(List<Matches> matches) {
 
@@ -199,7 +194,7 @@ public class MatchesAnalysis {
         return matchKey;
     }
 
-    public static Map<String, Integer> sameBowlerDismissedbySamePlayer(List<Deliveries> deliveries) {
+    public static Map<String, Integer> findMostFrequentDismissalPair(List<Deliveries> deliveries) {
 
         Map<String,Map<String,Integer>> bowlerName = new HashMap<>();
         for(Deliveries d:deliveries){
@@ -217,22 +212,78 @@ public class MatchesAnalysis {
                 batsmanMap.put(batsmanOut, batsmanMap.getOrDefault(batsmanOut, 0) + 1);
             }
         }
-            String topPair = null;
-            int max=0;
+            String topDismissalPair = null;
+            int maxDismissals=0;
 
             for(Map.Entry<String,Map<String,Integer>> bowlerEntry :bowlerName.entrySet() ){
                 String bowlerWik =bowlerEntry.getKey();
                 for(Map.Entry<String,Integer> batsmanEntry : bowlerEntry.getValue().entrySet()){
-                    if(batsmanEntry.getValue()>max){
-                        max=batsmanEntry.getValue();
-                        topPair= bowlerWik+" Dismissed "+ batsmanEntry.getKey();
+                    if(batsmanEntry.getValue()>maxDismissals){
+                        maxDismissals=batsmanEntry.getValue();
+                        topDismissalPair= bowlerWik+" Dismissed "+ batsmanEntry.getKey();
 
                     }
                 }
         }
         Map<String, Integer> result = new HashMap<>();
-        result.put(topPair, max);
+        result.put(topDismissalPair, maxDismissals);
         return result;
 
+    }
+
+    public static Map<String, Integer> mostWickets5Hauls(List<Deliveries> deliveries) {
+      Map<Integer, Map<String,Integer>> wicketsPerMatch = new HashMap<>();
+
+      for (Deliveries d:deliveries){
+          String bowler = d.getBowler();
+          String BatsmanName = d.getPlayerDismissed();
+          String DissimisalType = d.getPlayerDismissed();
+
+          if(BatsmanName != null && DissimisalType != null
+                  && !BatsmanName.trim().isEmpty()
+                  && !DissimisalType.equalsIgnoreCase(" run out")
+                  && !DissimisalType.equalsIgnoreCase("retired hurt")){
+
+              int MatchId = d.getMatchId();
+              wicketsPerMatch.putIfAbsent(MatchId,new HashMap<>());
+              Map<String,Integer> bowlerMap = wicketsPerMatch.get(MatchId);
+              bowlerMap.put(bowler,bowlerMap.getOrDefault(bowler,0)+1);
+          }
+      }
+      Map<String, Integer> fiveWicketsHaul = new HashMap<>();
+      for(Map<String,Integer> bowlerMap : wicketsPerMatch.values()){
+          for(Map.Entry<String,Integer> entry : bowlerMap.entrySet()){
+              if(entry.getValue()>=5){
+                  String bowler = entry.getKey();
+                    fiveWicketsHaul.put(bowler,fiveWicketsHaul.getOrDefault(bowler,0)+1);
+              }
+          }
+      }
+        return fiveWicketsHaul;
+    }
+
+    public static Map<String, Integer> mostPlayerOfMatchAward(List<Matches> matches) {
+
+        Map<String, Integer> playerAwardCount = new HashMap<>();
+        for (Matches match : matches) {
+            String playerOfMatch = match.getPlayerOfMatch();
+            if (playerOfMatch != null && !playerOfMatch.trim().isEmpty())
+                playerAwardCount.put(playerOfMatch, playerAwardCount.getOrDefault(playerOfMatch, 0) + 1);
+
+        }
+        String topPlayer = null;
+        int maxAwards=0;
+       for(Map.Entry<String,Integer> entry:playerAwardCount.entrySet()){
+           if(entry.getValue()>maxAwards){
+               maxAwards=entry.getValue();
+               topPlayer =entry.getKey();
+           }
+       }
+       Map<String,Integer> result = new HashMap<>();
+       if(topPlayer !=null){
+           result.put(topPlayer,maxAwards);
+       }
+
+       return result;
     }
 }
