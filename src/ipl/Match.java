@@ -2,7 +2,7 @@ package ipl;
 
 import java.util.Date;
 
-public class Matches {
+public class Match {
     private int id;
     private int season;
     private String city;
@@ -50,7 +50,7 @@ public class Matches {
     public int getWinByWickets() { return winByWickets; }
     public void setWinByWickets(int winByWickets) { this.winByWickets = winByWickets; }
     public String getPlayerOfMatch() { return playerOfMatch; }
-    public void setPlayerOfMatch(String playerOfMatch) { this.playerOfMatch = playerOfMatch; }
+    public void setPlayerOfMatch(String playerOfTheMatch) { this.playerOfMatch = playerOfTheMatch; }
     public String getVenue() { return venue; }
     public void setVenue(String venue) { this.venue = venue; }
     public String getUmpire1() { return umpire1; }

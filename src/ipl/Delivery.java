@@ -1,6 +1,6 @@
 package ipl;
 
-public class Deliveries {
+public class Delivery {
     private int matchId;
     private int inning;
     private String battingTeam;
@@ -14,7 +14,7 @@ public class Deliveries {
     private int wideRuns;
     private int byeRuns;
     private int legByeRuns;
-    private int noBall;
+    private int noBallRuns;
     private int penaltyRuns;
     private int batsmanRuns;
     private int extraRuns;
@@ -50,8 +50,8 @@ public class Deliveries {
     public void setByeRuns(int byeRuns) { this.byeRuns = byeRuns; }
     public int getLegByeRuns() { return legByeRuns; }
     public void setLegByeRuns(int legByeRuns) { this.legByeRuns = legByeRuns; }
-    public int getNoBall() { return noBall; }
-    public void setNoBall(int noBall) { this.noBall = noBall; }
+    public int getNoBallRuns() { return noBallRuns; }
+    public void setNoBallRuns(int noBallRuns) { this.noBallRuns = noBallRuns; }
     public int getPenaltyRuns() { return penaltyRuns; }
     public void setPenaltyRuns(int penaltyRuns) { this.penaltyRuns = penaltyRuns; }
     public int getBatsmanRuns() { return batsmanRuns; }
