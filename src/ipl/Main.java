@@ -129,22 +129,22 @@ public class Main {
 
            matchesPerYear(matches);
            matchesWinPerTeam(matches);
-           extraRuns2016(matches, deliveries);
-           topEconomicalBowlers2015(matches, deliveries);
-           winPercentageTeam(matches);
-           topWicketTakerPerSeason(matches, deliveries);
+           calculateExtraRunsByTeamFor2016(matches, deliveries);
+           findTopEconomicalBowlersFor2015(matches, deliveries);
+           calculateWinPercentagePerTeam(matches);
+           findTopWicketTakerPerSeason(matches, deliveries);
            numberOfMatchesPlayedEachCity(matches);
            wonTossAndWonMatch(matches);
-           findMostFrequentDismissalPair(deliveries);
-           mostWickets5Hauls(deliveries);
+           getMostFrequentBowlerBatsmanPair(deliveries);
+           mostFiveWicketsHauls(deliveries);
            mostPlayerOfMatchAward(matches);
-           mostRunScorePlayer(deliveries);
-           mostEconomyBowlerInPowerPlay(deliveries);
-           everyYearFinalMatch(matches);
-           sixByPlayer(deliveries);
-           numberOfEachTimeWinToss(matches);
-           mostRunScorePlayerPeryear(matches,deliveries);
-           mostBoundariesPerTeamPerSeason(matches,deliveries);
+           findTopRunScorer(deliveries);
+           findBestEconomyBowlerInPowerplay(deliveries);
+           findFinalMatchPerSeason(matches);
+           countSixesByPlayer(deliveries);
+           countTossWinsPerTeam(matches);
+           findTopRunScorerPerSeason(matches,deliveries);
+           findTeamWithMostBoundariesPerSeason(matches,deliveries);
     }
 
     public static void matchesPerYear(List<Match> matches) {
@@ -167,7 +167,7 @@ public class Main {
         System.out.println(win);
     }
 
-    public static void extraRuns2016(List<Match> matches, List<Delivery> deliveries) {
+    public static void calculateExtraRunsByTeamFor2016(List<Match> matches, List<Delivery> deliveries) {
         Set<Integer> matchIds2016 = new HashSet<>();
         for (Match m : matches) {
             if (m.getSeason() == 2016) {
@@ -185,7 +185,7 @@ public class Main {
         System.out.println(extraRunMap);
     }
 
-    public static void topEconomicalBowlers2015(List<Match> matches, List<Delivery> deliveries) {
+    public static void findTopEconomicalBowlersFor2015(List<Match> matches, List<Delivery> deliveries) {
 
         Set<Integer> matchIds2015 = new HashSet<>();
         for(Match m : matches){
@@ -233,7 +233,7 @@ public class Main {
         System.out.println(top10);
     }
 
-    public static void winPercentageTeam(List<Match> matches) {
+    public static void calculateWinPercentagePerTeam(List<Match> matches) {
         Map<String, Integer> matchPlayed = new HashMap<>();
         Map<String, Integer>  matchWon = new HashMap<>();
 
@@ -257,23 +257,19 @@ public class Main {
         System.out.println(winPercentage);
     }
 
-    public static void topWicketTakerPerSeason(List<Match> matches, List<Delivery> deliveries) {
+    public static void findTopWicketTakerPerSeason(List<Match> matches, List<Delivery> deliveries) {
 
         Map<Integer,Integer> MatchByYear= new HashMap<>();
         for(Match m: matches){
             MatchByYear.put(m.getId(),m.getSeason());
         }
-        //track wicket per season
         Map<Integer,Map<String,Integer>> wicketTaker = new HashMap<>();
         for(Delivery d: deliveries){
             if(d.getPlayerDismissed() != null && !d.getPlayerDismissed().trim().isEmpty()){
                 int season  = MatchByYear.get(d.getMatchId());
-//                System.out.print(bowler);
                 String bowler = d.getBowler();
-                // if season not present, create new map
                 wicketTaker.putIfAbsent(season, new HashMap<>());
                 Map<String, Integer> bowlerMap = wicketTaker.get(season);
-//
                 bowlerMap.put(bowler,bowlerMap.getOrDefault(bowler,0)+1);
             }
         }
@@ -290,11 +286,9 @@ public class Main {
                     topBowler = entry.getKey();
                 }
             }
-
             topWicket.put(season, topBowler + " (" + maxWickets + " wickets)");
         }
         System.out.println(topWicket);
-
     }
 
     public static void numberOfMatchesPlayedEachCity(List<Match> matches) {
@@ -323,7 +317,7 @@ public class Main {
         System.out.println(matchKey);
     }
 
-    public static void findMostFrequentDismissalPair(List<Delivery> deliveries) {
+    public static void getMostFrequentBowlerBatsmanPair(List<Delivery> deliveries) {
 
         Map<String,Map<String,Integer>> bowlerName = new HashMap<>();
         for(Delivery d:deliveries){
@@ -360,7 +354,7 @@ public class Main {
 
     }
 
-    public static void mostWickets5Hauls(List<Delivery> deliveries) {
+    public static void mostFiveWicketsHauls(List<Delivery> deliveries) {
         Map<Integer, Map<String,Integer>> wicketsPerMatch = new HashMap<>();
 
         for (Delivery d:deliveries){
@@ -415,7 +409,7 @@ public class Main {
         System.out.println(result);
     }
 
-    public static void mostRunScorePlayer(List<Delivery> deliveries) {
+    public static void findTopRunScorer(List<Delivery> deliveries) {
         Map<String, Integer> runsByPlayer = new HashMap<>();
         for(Delivery d: deliveries){
             String player = d.getBatsman();
@@ -438,7 +432,7 @@ public class Main {
 
     }
 
-    public static void mostEconomyBowlerInPowerPlay(List<Delivery> deliveries) {
+    public static void findBestEconomyBowlerInPowerplay(List<Delivery> deliveries) {
         Map<String,Map<String,Integer>> runsByPlayer = new HashMap<>();
 
         for(Delivery d: deliveries){
@@ -473,7 +467,7 @@ public class Main {
             System.out.println(bestBowler+" "+ runconced);
     }
 
-    public static void everyYearFinalMatch(List<Match> matches) {
+    public static void findFinalMatchPerSeason(List<Match> matches) {
 
         Map<Integer,Match> finalMatches = new HashMap<>();
         for(Match match:matches){
@@ -498,7 +492,7 @@ public class Main {
         System.out.println(matchSeason);
     }
 
-    public static void sixByPlayer(List<Delivery> deliveries) {
+    public static void countSixesByPlayer(List<Delivery> deliveries) {
         Map<String , Integer> player = new HashMap<>();
         for(Delivery d:deliveries){
             String Batsman = d.getBatsman();
@@ -511,7 +505,7 @@ public class Main {
         System.out.println(player);
     }
 
-    public static void numberOfEachTimeWinToss(List<Match> matches) {
+    public static void countTossWinsPerTeam(List<Match> matches) {
         Map<String, Integer> teamName = new HashMap<>();
         for(Match match: matches){
         String tossWinner = match.getTossWinner();
@@ -521,7 +515,7 @@ public class Main {
 
     }
 
-    public static void mostRunScorePlayerPeryear(List<Match> matches, List<Delivery> deliveries) {
+    public static void findTopRunScorerPerSeason(List<Match> matches, List<Delivery> deliveries) {
 
       Map<Integer,Integer> matchToSeason = new HashMap<>();
       for(Match match: matches){
@@ -554,7 +548,7 @@ public class Main {
         }
     }
 
-    public static void mostBoundariesPerTeamPerSeason(List<Match> matches, List<Delivery> deliveries) {
+    public static void findTeamWithMostBoundariesPerSeason(List<Match> matches, List<Delivery> deliveries) {
         Map<Integer,Integer> matchIdSeason = new HashMap<>();
         for(Match match: matches){
             matchIdSeason.put(match.getId(), match.getSeason());
@@ -575,18 +569,18 @@ public class Main {
         }
         for(Map.Entry<Integer,Map<String,Integer>> entry : boundariesSeason.entrySet()){
             int season = entry.getKey();
-            Map<String,Integer> sessionBoundries = entry.getValue();
+            Map<String,Integer> sessionBoundaries = entry.getValue();
 
             String teamName = null;
-            int boundires = 0;
+            int boundaries = 0;
 
-            for(Map.Entry<String,Integer> entry1 : sessionBoundries.entrySet()){
-                if(entry1.getValue()>boundires){
-                    boundires=entry1.getValue();
+            for(Map.Entry<String,Integer> entry1 : sessionBoundaries.entrySet()){
+                if(entry1.getValue()>boundaries){
+                    boundaries=entry1.getValue();
                     teamName= entry1.getKey();
                 }
             }
-            System.out.println(season+" "+teamName+" "+ boundires);
+            System.out.println(season+" "+teamName+" "+ boundaries);
         }
     }
 
