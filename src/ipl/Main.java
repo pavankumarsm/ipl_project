@@ -144,10 +144,8 @@ public class Main {
            sixByPlayer(deliveries);
            numberOfEachTimeWinToss(matches);
            mostRunScorePlayerPeryear(matches,deliveries);
+           mostBoundariesPerTeamPerSeason(matches,deliveries);
     }
-
-
-
 
     public static void matchesPerYear(List<Match> matches) {
         Map<Integer, Integer> seasonMatchCount = new TreeMap<>();
@@ -555,5 +553,42 @@ public class Main {
                 System.out.println(BatsmanName+" "+ maxScore);
         }
     }
+
+    public static void mostBoundariesPerTeamPerSeason(List<Match> matches, List<Delivery> deliveries) {
+        Map<Integer,Integer> matchIdSeason = new HashMap<>();
+        for(Match match: matches){
+            matchIdSeason.put(match.getId(), match.getSeason());
+        }
+
+        Map<Integer,Map<String,Integer>> boundariesSeason = new HashMap<>();
+
+        for(Delivery d:deliveries){
+        int runs = d.getBatsmanRuns();
+        if(runs ==4 || runs==6){
+            int season = matchIdSeason.get(d.getMatchId());
+            String team = d.getBattingTeam();
+
+            boundariesSeason.putIfAbsent(season, new HashMap<>());
+            Map<String,Integer> boundaries = boundariesSeason.get(season);
+            boundaries.put(team,boundaries.getOrDefault(team,0)+1);
+            }
+        }
+        for(Map.Entry<Integer,Map<String,Integer>> entry : boundariesSeason.entrySet()){
+            int season = entry.getKey();
+            Map<String,Integer> sessionBoundries = entry.getValue();
+
+            String teamName = null;
+            int boundires = 0;
+
+            for(Map.Entry<String,Integer> entry1 : sessionBoundries.entrySet()){
+                if(entry1.getValue()>boundires){
+                    boundires=entry1.getValue();
+                    teamName= entry1.getKey();
+                }
+            }
+            System.out.println(season+" "+teamName+" "+ boundires);
+        }
+    }
+
 
 }
