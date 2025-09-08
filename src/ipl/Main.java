@@ -124,6 +124,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        long start = System.nanoTime();
         List<Match> matches = fetchMatches();
         List<Delivery> deliveries = fetchDeliveries();
 
@@ -145,6 +146,8 @@ public class Main {
            countTossWinsPerTeam(matches);
            findTopRunScorerPerSeason(matches,deliveries);
            findTeamWithMostBoundariesPerSeason(matches,deliveries);
+        long end = System.nanoTime();
+        System.out.println((end-start)/1000000);
     }
 
     public static void matchesPerYear(List<Match> matches) {
@@ -433,24 +436,24 @@ public class Main {
     }
 
     public static void findBestEconomyBowlerInPowerplay(List<Delivery> deliveries) {
-        Map<String,Map<String,Integer>> runsByPlayer = new HashMap<>();
+        Map<String,Map<String,Integer>> bowlerStatsMap = new HashMap<>();
 
         for(Delivery d: deliveries){
             int over = d.getOver();
             if(over>=1 && over<=6){
                 String bowlerName = d.getBowler();
                 int runs = d.getTotalRuns();
-                runsByPlayer.putIfAbsent(bowlerName,new HashMap<>());
-                Map<String,Integer> stats = runsByPlayer.get(bowlerName);
+                bowlerStatsMap.putIfAbsent(bowlerName,new HashMap<>());
+                Map<String,Integer> stats = bowlerStatsMap.get(bowlerName);
 
                 stats.put("runs",stats.getOrDefault("runs",0)+runs);
                 stats.put("balls",stats.getOrDefault("balls",0)+1);
             }
         }
            String bestBowler = null;
-           Double runconced =Double.MAX_VALUE;
+           Double bestEconomy =Double.MAX_VALUE;
 
-            for(Map.Entry<String,Map<String,Integer>> entry: runsByPlayer.entrySet()){
+            for(Map.Entry<String,Map<String,Integer>> entry: bowlerStatsMap.entrySet()){
                 String Bowler = entry.getKey();
                 int runs = entry.getValue().getOrDefault("runs",0);
                 int balls = entry.getValue().getOrDefault("balls",0);
@@ -458,27 +461,27 @@ public class Main {
                 if(balls>=12){
                     Double overs = balls/6.0;
                     Double economy = runs/overs;
-                    if(economy<runconced){
-                        runconced=economy;
+                    if(economy<bestEconomy){
+                        bestEconomy=economy;
                         bestBowler=Bowler;
                     }
                 }
             }
-            System.out.println(bestBowler+" "+ runconced);
+            System.out.println(bestBowler+" "+ bestEconomy);
     }
 
     public static void findFinalMatchPerSeason(List<Match> matches) {
 
-        Map<Integer,Match> finalMatches = new HashMap<>();
+        Map<Integer,Match> finalMatchesBySeason = new HashMap<>();
         for(Match match:matches){
             int season = match.getSeason();
 
-            if(!finalMatches.containsKey(season) || match.getId()>finalMatches.get(season).getId()){
-                finalMatches.put(season,match);
+            if(!finalMatchesBySeason.containsKey(season) || match.getId()>finalMatchesBySeason.get(season).getId()){
+                finalMatchesBySeason.put(season,match);
             }
         }
-        Map<Integer,Map<String,String>> matchSeason = new TreeMap<>();
-        for(Map.Entry<Integer,Match> entry:finalMatches.entrySet()){
+        Map<Integer,Map<String,String>> finalMatchDetailsBySeason = new TreeMap<>();
+        for(Map.Entry<Integer,Match> entry:finalMatchesBySeason.entrySet()){
             int Season = entry.getKey();
             Match finalMatch = entry.getValue();
 
@@ -487,31 +490,31 @@ public class Main {
             details.put("venue",finalMatch.getVenue());
             details.put("pom",finalMatch.getPlayerOfMatch());
 
-            matchSeason.put(Season,details);
+            finalMatchDetailsBySeason.put(Season,details);
         }
-        System.out.println(matchSeason);
+        System.out.println(finalMatchDetailsBySeason);
     }
 
     public static void countSixesByPlayer(List<Delivery> deliveries) {
-        Map<String , Integer> player = new HashMap<>();
+        Map<String , Integer> sixesByBatsman = new HashMap<>();
         for(Delivery d:deliveries){
             String Batsman = d.getBatsman();
             int runs = d.getBatsmanRuns();
             if (runs == 6) {
 
-                player.put(Batsman,player.getOrDefault(Batsman,0)+1);
+                sixesByBatsman.put(Batsman,sixesByBatsman.getOrDefault(Batsman,0)+1);
             }
         }
-        System.out.println(player);
+        System.out.println(sixesByBatsman);
     }
 
     public static void countTossWinsPerTeam(List<Match> matches) {
-        Map<String, Integer> teamName = new HashMap<>();
+        Map<String, Integer> tossWinsByTeam = new HashMap<>();
         for(Match match: matches){
         String tossWinner = match.getTossWinner();
-        teamName.put(tossWinner,teamName.getOrDefault(tossWinner,0)+1);
+            tossWinsByTeam.put(tossWinner,tossWinsByTeam.getOrDefault(tossWinner,0)+1);
         }
-        System.out.println(teamName);
+        System.out.println(tossWinsByTeam);
 
     }
 
@@ -521,30 +524,30 @@ public class Main {
       for(Match match: matches){
           matchToSeason.put(match.getId(), match.getSeason());
       }
-        Map<Integer, Map<String,Integer>> runsByYear = new TreeMap<>();
+        Map<Integer, Map<String,Integer>> runsBySeason = new TreeMap<>();
       for(Delivery d:deliveries){
           int matchId = d.getMatchId();
           int season = matchToSeason.get(matchId);
           String batsman = d.getBatsman();
           int runs = d.getBatsmanRuns();
 
-          runsByYear.putIfAbsent(season, new HashMap<>());
-          Map<String,Integer> batsmanRuns = runsByYear.get(season);
+          runsBySeason.putIfAbsent(season, new HashMap<>());
+          Map<String,Integer> batsmanRuns = runsBySeason.get(season);
 
           batsmanRuns.put(batsman,batsmanRuns.getOrDefault(batsman,0)+runs);
       }
-        for(Map.Entry<Integer,Map<String,Integer>> seasonEntry : runsByYear.entrySet()){
+        for(Map.Entry<Integer,Map<String,Integer>> seasonEntry : runsBySeason.entrySet()){
             int season = seasonEntry.getKey();
-            String BatsmanName = null;
-            int maxScore = 0;
+            String topBatsman = null;
+            int highestRuns = 0;
             System.out.println(season);
             for(Map.Entry<String,Integer> batsmanEntry : seasonEntry.getValue().entrySet()){
-                if(batsmanEntry.getValue()>maxScore){
-                    maxScore=batsmanEntry.getValue();
-                    BatsmanName= batsmanEntry.getKey();
+                if(batsmanEntry.getValue()>highestRuns){
+                    highestRuns=batsmanEntry.getValue();
+                    topBatsman= batsmanEntry.getKey();
                 }
             }
-                System.out.println(BatsmanName+" "+ maxScore);
+                System.out.println(topBatsman+" "+ highestRuns);
         }
     }
 
