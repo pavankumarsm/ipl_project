@@ -3,9 +3,11 @@ package ipl;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.annotation.Target;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Phaser;
 
 public class Main {
     private static final String MATCHES_PATH = "src/Resources/matches.csv";
@@ -145,8 +147,13 @@ public class Main {
            countTossWinsPerTeam(matches);
            findTopRunScorerPerSeason(matches,deliveries);
            findTeamWithMostBoundariesPerSeason(matches,deliveries);
-
+//           findTopScorerOfEveryTeam(matches,deliveries);
+           findTheMostEconomyBowlerInSuperOver(deliveries);
+           findTheTopRunnerOfEveryYearEveryTeam(matches,deliveries);
+           findUmpireOfTheEveryMatch(matches);
     }
+
+
 
     public static void matchesPerYear(List<Match> matches) {
         Map<Integer, Integer> seasonMatchCount = new TreeMap<>();
@@ -582,5 +589,158 @@ public class Main {
         }
     }
 
+    public static void findTopScorerOfEveryTeam(List<Match> matches, List<Delivery> deliveries) {
+
+        // season -> teamName -> batsaman -> total Runs
+
+        Map<Integer,Integer>  SeasonMatchId = new HashMap<>();
+        for(Match match : matches){
+            int season = match.getSeason();
+          SeasonMatchId.put(match.getId(),season);
+
+        }
+
+        Map<Integer,Map<String,Map<String,Integer>>> topScorerEachTeam = new HashMap<>();
+        for(Delivery delivery: deliveries){
+            String batsman = delivery.getBatsman();
+            int matchId = delivery.getMatchId();
+            String team = delivery.getBattingTeam();
+            int playerRuns = delivery.getBatsmanRuns();
+            int season = SeasonMatchId.get(matchId);
+
+            if (batsman != null && !batsman.trim().isEmpty()) {
+
+                Map<String, Map<String,Integer>> runscoreTeam = topScorerEachTeam.computeIfAbsent(season , k-> new HashMap<>());
+
+
+                Map<String,Integer> batsmanMap = runscoreTeam.computeIfAbsent(team,k-> new HashMap<>());
+
+                batsmanMap.put(batsman, batsmanMap.getOrDefault(batsman, 0) + playerRuns);
+            }
+
+            for(Map.Entry<Integer,Map<String,Map<String,Integer>>> outerMap : topScorerEachTeam.entrySet() ){
+                System.out.println(outerMap.getKey());
+//                int outerMapSeason = outerMap.getKey();
+                for(Map.Entry<String,Map<String,Integer>> teamMap : outerMap.getValue().entrySet()){
+                    String teamNameMap = teamMap.getKey();
+                    List<Map.Entry<String, Integer>> sortedList = new ArrayList<>(teamMap.getValue().entrySet());
+                    sortedList.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+                    System.out.println(teamNameMap);
+                    // Print top 10
+//                    System.out.println("Season: " + season + ", Team: " + team);
+                    for (int i = 0; i < Math.min(10, sortedList.size()); i++) {
+                        Map.Entry<String, Integer> entry = sortedList.get(i);
+                        System.out.println("   " + entry.getKey() + " → " + entry.getValue());
+                    }
+                }
+            }
+        }
+    }
+
+    public static void findTheMostEconomyBowlerInSuperOver(List<Delivery> deliveries) {
+        Map<String,Integer> runConceded = new HashMap<>();
+        Map<String,Integer> ballsBowled= new HashMap<>();
+
+        for(Delivery delivery:deliveries){
+            if(delivery.isSuperOver()){
+                String bowlerName = delivery.getBowler();
+                int runs = delivery.getTotalRuns();
+
+                runConceded.put(bowlerName, runConceded.getOrDefault(bowlerName,0)+runs);
+
+                if(delivery.getWideRuns() ==0 && delivery.getNoBallRuns()==0){
+                    ballsBowled.put(bowlerName,ballsBowled.getOrDefault(bowlerName,0)+1);
+                }
+            }
+        }
+            String bestBowler = null;
+            double bestEconomy = Double.MAX_VALUE;
+
+            for (String bowler : runConceded.keySet()) {
+                int runs = runConceded.get(bowler);
+                int balls = ballsBowled.getOrDefault(bowler, 0);
+
+                if (balls > 0) {
+                    double overs = balls / 6.0;
+                    double economy = runs / overs;
+
+                    if (economy < bestEconomy) {
+                        bestEconomy = economy;
+                        bestBowler = bowler;
+                    }
+                }
+            }
+        System.out.println();
+        System.out.println("Best Economy Bolwer -> "+bestBowler + " with economy ->" + String.format("%.2f", bestEconomy));
+        System.out.println();
+     }
+
+    public static void findTheTopRunnerOfEveryYearEveryTeam(List<Match> matches, List<Delivery> deliveries) {
+        Map<Integer, Integer> seasonMatchYear = new HashMap<>();
+        for (Match match : matches) {
+            seasonMatchYear.put(match.getId(), match.getSeason());
+        }
+        Map<Integer, Map<String, Map<String, Integer>>> topRunnerOfTheTeam = new HashMap<>();
+        for (Delivery delivery : deliveries) {
+            int matchId = delivery.getMatchId();
+            String batsman = delivery.getBatsman();
+            int batsmanRuns = delivery.getBatsmanRuns();
+            String team = delivery.getBattingTeam();
+            int seasonYear = seasonMatchYear.get(matchId);
+            if (team != null && !team.trim().isEmpty() && batsman != null && !batsman.trim().isEmpty()) {
+                Map<String, Map<String, Integer>> teamPlayerNameRuns = topRunnerOfTheTeam.computeIfAbsent(seasonYear, k -> new HashMap<>());
+                Map<String, Integer> playerRuns = teamPlayerNameRuns.computeIfAbsent(team, k -> new HashMap<>());
+                playerRuns.put(batsman, playerRuns.getOrDefault(batsman, 0) + batsmanRuns);
+            }
+        }
+        for (Map.Entry<Integer, Map<String, Map<String, Integer>>> outerMap : topRunnerOfTheTeam.entrySet()) {
+            int seasonYearMatch = outerMap.getKey();
+            System.out.println(seasonYearMatch);
+            for (Map.Entry<String, Map<String, Integer>> secondOuterMap : outerMap.getValue().entrySet()) {
+                String teamName = secondOuterMap.getKey();
+
+                String batsmanName = null;
+                int maxRun = 0;
+                for (Map.Entry<String, Integer> playerRunsHit : secondOuterMap.getValue().entrySet()) {
+                    if (playerRunsHit.getValue() > maxRun) {
+                        maxRun = playerRunsHit.getValue();
+                        batsmanName = playerRunsHit.getKey();
+                    }
+                }
+                System.out.println("teamName -> " + teamName + " player -> " + batsmanName + " runs ->" + maxRun);
+            }
+        }
+    }
+
+    public static void findUmpireOfTheEveryMatch(List<Match> matches) {
+        Map<Integer, Map<String, Map<String, String>>> umpireOfTheVenue = new HashMap<>();
+        for (Match match : matches) {
+            String team = match.getTeam1();
+            String venue = match.getVenue();
+            int season = match.getSeason();
+            String umpire = match.getUmpire1();
+
+            Map<String, Map<String, String>> venueOfTheMatch = umpireOfTheVenue.computeIfAbsent(season,k-> new HashMap<>());
+            Map<String,String> umpireVenue = venueOfTheMatch.computeIfAbsent(team,k-> new HashMap<>());
+            umpireVenue.put(venue,umpire);
+        }
+        for (Map.Entry<Integer, Map<String, Map<String, String>>> outerMap : umpireOfTheVenue.entrySet()) {
+            int season = outerMap.getKey();
+            System.out.println("Year: " + season);
+            System.out.println("---------------------------");
+
+            for (Map.Entry<String, Map<String, String>> teamEntry : outerMap.getValue().entrySet()) {
+                String teamName = teamEntry.getKey();
+                System.out.println("Team: " + teamName);
+
+                for (Map.Entry<String, String> venueEntry : teamEntry.getValue().entrySet()) {
+                    System.out.println("   Venue: " + venueEntry.getKey() + " → Umpire: " + venueEntry.getValue());
+                }
+            }
+            System.out.println();
+        }
+    }
 
 }
+
