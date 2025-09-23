@@ -151,6 +151,8 @@ public class Main {
            findTheMostEconomyBowlerInSuperOver(deliveries);
            findTheTopRunnerOfEveryYearEveryTeam(matches,deliveries);
            findUmpireOfTheEveryMatch(matches);
+        teamMostWinsBattingSecondAtRajivGandhi(matches);
+        displayBattingAndBowlingAnalysisForMatch(deliveries);
     }
 
 
@@ -741,6 +743,89 @@ public class Main {
             System.out.println();
         }
     }
+
+    public static void teamMostWinsBattingSecondAtRajivGandhi(List<Match> matches) {
+        Map<String, Integer> teamWins = new HashMap<>();
+        for (Match match : matches) {
+                String tossWinner = match.getTossWinner();
+                String tossDecision = match.getTossDecision();
+                String team1 = match.getTeam1();
+                String team2 = match.getTeam2();
+                String winner = match.getWinner();
+                String battingSecond = null;
+            if (match.getVenue() != null && match.getVenue().toLowerCase().contains("rajiv gandhi international stadium")) {
+                // If toss winner chooses to bat → other team fields first → other team bats 2nd
+                if (tossDecision.equalsIgnoreCase("bat")) {
+                    battingSecond = tossWinner.equals(team1) ? team2 : team1;
+                }
+                // If toss winner chooses to field → toss winner bats 2nd
+                else if (tossDecision.equalsIgnoreCase("field")) {
+                    battingSecond = tossWinner;
+                }
+                // Count only if batting second team actually won
+                if (winner != null && winner.equals(battingSecond)) {
+                    teamWins.put(winner, teamWins.getOrDefault(winner, 0) + 1);
+                }
+            }
+        }
+        // Find max wins
+        String topTeam = null;
+        int maxWins = 0;
+        for (Map.Entry<String, Integer> entry : teamWins.entrySet()) {
+            if (entry.getValue() > maxWins) {
+                maxWins = entry.getValue();
+                topTeam = entry.getKey();
+            }
+        }
+
+        System.out.println("Team with most wins batting second at Rajiv Gandhi International Stadium: "
+                + topTeam + " (" + maxWins + " wins)");
+    }
+
+    public static void displayBattingAndBowlingAnalysisForMatch( List<Delivery> deliveries) {
+        Map<String, Integer> battingRuns = new HashMap<>();
+        Map<String, Integer> wickets = new HashMap<>();
+        Map<String, Integer> bowlingRuns = new HashMap<>();
+        Map<String, Integer> ballsBowled = new HashMap<>();
+
+        for (Delivery delivery : deliveries) {
+            if (delivery.getMatchId() == 1) {
+                // Batting analysis
+                String batsman = delivery.getBatsman();
+                battingRuns.put(batsman, battingRuns.getOrDefault(batsman, 0) + delivery.getBatsmanRuns());
+
+                // Bowling analysis
+                String bowler = delivery.getBowler();
+                bowlingRuns.put(bowler, bowlingRuns.getOrDefault(bowler, 0) + delivery.getTotalRuns());
+                if (delivery.getWideRuns() == 0 && delivery.getNoBallRuns() == 0) {
+                    ballsBowled.put(bowler, ballsBowled.getOrDefault(bowler, 0) + 1);
+                }
+
+                if (delivery.getPlayerDismissed() != null && !delivery.getPlayerDismissed().trim().isEmpty()
+                        && !"run out".equalsIgnoreCase(delivery.getDismissalKind())
+                        && !"retired hurt".equalsIgnoreCase(delivery.getDismissalKind())) {
+                    wickets.put(bowler, wickets.getOrDefault(bowler, 0) + 1);
+                }
+            }
+        }
+
+        System.out.println("Batting Analysis:");
+        for (Map.Entry<String, Integer> entry : battingRuns.entrySet()) {
+            System.out.println("Batsman: " + entry.getKey() + " → Runs: " + entry.getValue());
+        }
+        System.out.println("\nBowling Analysis:");
+        for (String bowler : bowlingRuns.keySet()) {
+            int runs = bowlingRuns.get(bowler);
+            int balls = ballsBowled.getOrDefault(bowler, 0);
+            double overs = balls / 6.0;
+            double economy = (balls > 0) ? (runs / overs) : 0.0;
+            int wkts = wickets.getOrDefault(bowler, 0);
+
+            System.out.println("Bowler: " + bowler + " → Runs: " + runs +
+                    ", Wickets: " + wkts + ", Economy: " + String.format("%.2f", economy));
+        }
+    }
+
 
 }
 
