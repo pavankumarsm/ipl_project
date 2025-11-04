@@ -155,8 +155,6 @@ public class Main {
         displayBattingAndBowlingAnalysisForMatch(deliveries);
     }
 
-
-
     private static void matchesPerYear(List<Match> matches) {
         Map<Integer, Integer> seasonMatchCount = new TreeMap<>();
         for (Match match : matches) {
